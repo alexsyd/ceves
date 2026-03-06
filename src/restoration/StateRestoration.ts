@@ -21,7 +21,7 @@ import type {
 } from '../storage/interfaces';
 import type { BaseState } from '../schemas/State';
 import { applyEventToState } from '../decorators/EventHandler';
-import { VersionMismatchError } from '../errors/VersionMismatchError';
+import { VersionConflictError } from '../errors/VersionConflictError';
 
 /**
  * Restore state from event array using registered event handlers.
@@ -89,7 +89,7 @@ export function restoreFromEvents<TState extends BaseState>(
   initialState: TState | null = null,
   StateClass: new () => TState
 ): TState | null {
-  // Handle empty events array - return initialState unchanged (AC-4.1.4)
+  // Handle empty events array - return initialState unchanged
   if (events.length === 0) {
     return initialState;
   }
@@ -97,13 +97,13 @@ export function restoreFromEvents<TState extends BaseState>(
   // Start with initialState (null for new aggregates, or snapshot state for incremental)
   let state = initialState;
 
-  // Apply events sequentially in array order (AC-4.1.3)
+  // Apply events sequentially in array order
   for (const event of events) {
     // Apply event using helper function (finds handler, validates, applies to state)
     state = applyEventToState(event.aggregateType, state, event, StateClass);
   }
 
-  // Return final state after all events applied (AC-4.1.1)
+  // Return final state after all events applied
   return state;
 }
 
@@ -129,7 +129,7 @@ export function restoreFromEvents<TState extends BaseState>(
  * @param state - The state after applying events (or null if aggregate doesn't exist)
  * @param events - The events that were applied to produce this state
  *
- * @throws {VersionMismatchError} If state.version !== lastEvent.version
+ * @throws {VersionConflictError} If state.version !== lastEvent.version
  *
  * @example
  * ```typescript
@@ -163,7 +163,7 @@ function validateStateVersion<TState extends BaseState>(
 
   // Validate that state.version matches the last event's version
   if (lastEvent && state.version !== lastEvent.version) {
-    throw new VersionMismatchError(
+    throw new VersionConflictError(
       `Version mismatch after state restoration for aggregate "${lastEvent.aggregateId}": expected version ${lastEvent.version} (from last event), but state.version is ${state.version}. This indicates a bug in the event handler's apply() method.`,
       lastEvent.version,
       state.version,
@@ -267,34 +267,34 @@ export async function restoreState<TState extends BaseState>(
   snapshotStore: ISnapshotStore,
   StateClass: new () => TState
 ): Promise<TState | null> {
-  // 1. Load snapshot (null if doesn't exist) - AC-4.2.1
+  // 1. Load snapshot (null if doesn't exist)
   const snapshot: StoredSnapshot | null = await snapshotStore.load(
     aggregateType,
     aggregateId
   );
 
-  // 2. Determine starting state and version - AC-4.2.1, AC-4.2.4
+  // 2. Determine starting state and version
   const initialState: TState | null = snapshot
     ? (snapshot.state as TState)
     : null;
   const afterVersion: number = snapshot ? snapshot.version : 0;
 
-  // 3. Load incremental events (only events with version > afterVersion) - AC-4.2.2
+  // 3. Load incremental events (only events with version > afterVersion)
   const events: StoredEvent[] = await eventStore.load(
     aggregateType,
     aggregateId,
     afterVersion
   );
 
-  // 4. If no new events, return snapshot state without replay (optimization) - AC-4.2.5
+  // 4. If no new events, return snapshot state without replay (optimization)
   if (events.length === 0) {
     return initialState;
   }
 
-  // 5. Apply incremental events to snapshot state - AC-4.2.3 (pass StateClass)
+  // 5. Apply incremental events to snapshot state (pass StateClass)
   const finalState = restoreFromEvents<TState>(events, initialState, StateClass);
 
-  // 6. Validate version consistency after restoration - AC-4.3.1, AC-4.3.2
+  // 6. Validate version consistency after restoration
   validateStateVersion(finalState, events);
 
   return finalState;

@@ -1,6 +1,6 @@
 {
-  "name": "ceves",
-  "version": "0.1.0",
+  "name": "@sydorenkoalex/ceves",
+  "version": "0.2.0",
   "description": "Event Sourcing framework for Cloudflare Workers and Durable Objects with CQRS and OpenAPI routing",
   "type": "module",
   "main": "./dist/index.js",
@@ -14,15 +14,7 @@
   "files": [
     "dist",
     "README.md",
-    "GETTING_STARTED.md",
-    "docs/api",
-    "example/src",
-    "example/README.md",
-    "example/wrangler.toml",
-    "example/wrangler-do.toml",
-    "example/tsconfig.json",
-    "example/package.json",
-    "example/migrations"
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsup",

@@ -8,8 +8,6 @@
  * @packageDocumentation
  */
 
-export const CEVES_VERSION = '0.1.0';
-
 // Storage interfaces
 export type {
   IEventStore,
@@ -33,11 +31,11 @@ export {
 } from './storage/errors';
 
 // Command schemas
-export { BaseCommandSchema, defineCommand } from './schemas/Command';
+export { BaseCommandSchema } from './schemas/Command';
 export type { BaseCommand } from './schemas/Command';
 
 // Event schemas
-export { BaseEventSchema, defineEvent } from './schemas/Event';
+export { BaseEventSchema } from './schemas/Event';
 export type { BaseEvent } from './schemas/Event';
 
 // State types
@@ -65,7 +63,6 @@ export {
   EventApplicationError,
   AggregateNotFoundError,
   VersionConflictError,
-  VersionMismatchError,
   BusinessRuleViolationError,
   UnauthorizedError,
   ForbiddenError,
@@ -88,7 +85,6 @@ export { restoreFromEvents, restoreState } from './restoration';
 
 // DO-First Architecture
 export { AggregateObject } from './core/AggregateObject';
-export { AggregateRouter, type AuthContext } from './core/AggregateRouter';
 
 // Ceves Routing - Commands and Queries
 export { QueryRoute } from './routing/QueryRoute';

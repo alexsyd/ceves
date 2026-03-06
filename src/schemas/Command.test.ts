@@ -2,18 +2,18 @@
  * Unit tests for Command schema definitions
  *
  * Tests cover:
- * - AC-2.1.1: BaseCommandSchema validation (aggregateType, aggregateId)
- * - AC-2.1.2: defineCommand helper (schema extension, type inference)
- * - AC-2.1.3: Validation error details (ZodError structure, actionable messages)
+ * - BaseCommandSchema validation (aggregateType, aggregateId)
+ * - BaseCommandSchema extension patterns (schema extension, type inference)
+ * - Validation error details (ZodError structure, actionable messages)
  * - Edge cases: null, undefined, wrong types, unknown fields
  */
 
 import { describe, it, expect } from 'vitest';
 import { z, ZodError } from 'zod';
-import { BaseCommandSchema, BaseCommand, defineCommand } from './Command';
+import { BaseCommandSchema, BaseCommand } from './Command';
 
 describe('BaseCommandSchema', () => {
-  describe('AC-2.1.1: validates aggregateType and aggregateId fields', () => {
+  describe('validates aggregateType and aggregateId fields', () => {
     it('should validate commands with valid aggregateType and aggregateId', () => {
       // Arrange
       const validCommand = {
@@ -102,177 +102,7 @@ describe('BaseCommandSchema', () => {
   });
 });
 
-describe('defineCommand', () => {
-  describe('AC-2.1.2: creates extended schemas with custom fields', () => {
-    it('should create schema extending base fields', () => {
-      // Arrange
-      const CreateAccountCommand = defineCommand('CreateAccount', {
-        email: z.string().email(),
-        name: z.string().min(1),
-      });
-
-      const validCommand = {
-        aggregateType: 'account',
-        aggregateId: 'acc-123',
-        commandType: 'CreateAccount',
-        email: 'alice@example.com',
-        name: 'Alice',
-      };
-
-      // Act
-      const result = CreateAccountCommand.parse(validCommand);
-
-      // Assert - base fields should be validated
-      expect(result.aggregateType).toBe('account');
-      expect(result.aggregateId).toBe('acc-123');
-    });
-
-    it('should add custom fields to schema', () => {
-      // Arrange
-      const CreateAccountCommand = defineCommand('CreateAccount', {
-        email: z.string().email(),
-        name: z.string().min(1),
-      });
-
-      const validCommand = {
-        aggregateType: 'account',
-        aggregateId: 'acc-123',
-        commandType: 'CreateAccount',
-        email: 'alice@example.com',
-        name: 'Alice',
-      };
-
-      // Act
-      const result = CreateAccountCommand.parse(validCommand);
-
-      // Assert - custom fields should be validated
-      expect(result.email).toBe('alice@example.com');
-      expect(result.name).toBe('Alice');
-    });
-
-    it('should add commandType as literal', () => {
-      // Arrange
-      const CreateAccountCommand = defineCommand('CreateAccount', {
-        email: z.string().email(),
-      });
-
-      const validCommand = {
-        aggregateType: 'account',
-        aggregateId: 'acc-123',
-        commandType: 'CreateAccount',
-        email: 'alice@example.com',
-      };
-
-      // Act
-      const result = CreateAccountCommand.parse(validCommand);
-
-      // Assert
-      expect(result.commandType).toBe('CreateAccount');
-    });
-
-    it('should reject wrong commandType literal', () => {
-      // Arrange
-      const CreateAccountCommand = defineCommand('CreateAccount', {
-        email: z.string().email(),
-      });
-
-      const invalidCommand = {
-        aggregateType: 'account',
-        aggregateId: 'acc-123',
-        commandType: 'WrongType', // Wrong literal!
-        email: 'alice@example.com',
-      };
-
-      // Act & Assert
-      expect(() => CreateAccountCommand.parse(invalidCommand)).toThrow(
-        ZodError
-      );
-    });
-
-    it('should validate combined schema (base + custom fields)', () => {
-      // Arrange
-      const DepositMoneyCommand = defineCommand('DepositMoney', {
-        amount: z.number().positive(),
-      });
-
-      // Act & Assert - Missing base field should fail
-      expect(() =>
-        DepositMoneyCommand.parse({
-          aggregateType: 'account',
-          // aggregateId missing!
-          commandType: 'DepositMoney',
-          amount: 100,
-        })
-      ).toThrow(ZodError);
-
-      // Act & Assert - Missing custom field should fail
-      expect(() =>
-        DepositMoneyCommand.parse({
-          aggregateType: 'account',
-          aggregateId: 'acc-123',
-          commandType: 'DepositMoney',
-          // amount missing!
-        })
-      ).toThrow(ZodError);
-    });
-
-    it('should validate custom field constraints', () => {
-      // Arrange
-      const CreateAccountCommand = defineCommand('CreateAccount', {
-        email: z.string().email(),
-        age: z.number().int().min(18),
-      });
-
-      // Act & Assert - Invalid email should fail
-      expect(() =>
-        CreateAccountCommand.parse({
-          aggregateType: 'account',
-          aggregateId: 'acc-123',
-          commandType: 'CreateAccount',
-          email: 'not-an-email',
-          age: 25,
-        })
-      ).toThrow(ZodError);
-
-      // Act & Assert - Age too young should fail
-      expect(() =>
-        CreateAccountCommand.parse({
-          aggregateType: 'account',
-          aggregateId: 'acc-123',
-          commandType: 'CreateAccount',
-          email: 'alice@example.com',
-          age: 17, // Below minimum!
-        })
-      ).toThrow(ZodError);
-    });
-
-    it('should support TypeScript type inference for custom commands', () => {
-      // Arrange
-      const CreateAccountCommand = defineCommand('CreateAccount', {
-        email: z.string().email(),
-        name: z.string().min(1),
-      });
-
-      type CreateAccountCommand = z.infer<typeof CreateAccountCommand>;
-
-      const command: CreateAccountCommand = {
-        aggregateType: 'account',
-        aggregateId: 'acc-123',
-        commandType: 'CreateAccount',
-        email: 'alice@example.com',
-        name: 'Alice',
-      };
-
-      // Act
-      const result = CreateAccountCommand.parse(command);
-
-      // Assert - TypeScript ensures type safety
-      expect(result).toEqual(command);
-    });
-  });
-});
-
-describe('AC-2.1.3: validation errors include field paths and details', () => {
+describe('validation errors include field paths and details', () => {
   it('should include field path in error.errors array', () => {
     // Arrange
     const invalidCommand = {
@@ -424,34 +254,6 @@ describe('Edge cases', () => {
     expect('unknownField' in result).toBe(false);
   });
 
-  it('should handle complex custom schemas with defineCommand', () => {
-    // Arrange
-    const TransferMoneyCommand = defineCommand('TransferMoney', {
-      fromAccount: z.string().min(1),
-      toAccount: z.string().min(1),
-      amount: z.number().positive(),
-      currency: z.enum(['USD', 'EUR', 'GBP']),
-      note: z.string().optional(),
-    });
-
-    const validCommand = {
-      aggregateType: 'account',
-      aggregateId: 'acc-123',
-      commandType: 'TransferMoney',
-      fromAccount: 'acc-123',
-      toAccount: 'acc-456',
-      amount: 100.5,
-      currency: 'USD' as const,
-    };
-
-    // Act
-    const result = TransferMoneyCommand.parse(validCommand);
-
-    // Assert
-    expect(result.amount).toBe(100.5);
-    expect(result.currency).toBe('USD');
-    expect(result.note).toBeUndefined(); // Optional field
-  });
 });
 
 describe('Integration with exports', () => {

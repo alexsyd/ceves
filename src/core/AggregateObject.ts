@@ -276,22 +276,16 @@ export abstract class AggregateObject<TState extends BaseState = BaseState> exte
    * Initialize event store and snapshot store
    * Can be overridden by subclasses for custom storage configuration
    *
-   * Note: SNAPSHOTS_BUCKET is optional - only needed for R2 snapshot migration.
-   * New DO implementations use DO Storage API and don't require snapshots.
+   * Note: Snapshot store is not auto-initialized here. Use R2SnapshotStore or D1SnapshotStore
+   * and set it via setStores() or override this method in your subclass.
    *
    * @param env - Environment bindings
    */
   protected initializeStores(env: AggregateObjectEnv): void {
     // Auto-initialize R2 event store from environment bindings
     if (env.EVENTS_BUCKET) {
-      // SNAPSHOTS_BUCKET is optional (only for R2 snapshot migration)
-      const r2Store = new R2EventStore(
-        env.EVENTS_BUCKET,
-        env.SNAPSHOTS_BUCKET || env.EVENTS_BUCKET // Fallback to EVENTS_BUCKET if no snapshots bucket
-      );
-      this.eventStore = r2Store;
-      // R2EventStore internally handles snapshots, cast to satisfy type (provides both interfaces)
-      this.snapshotStore = r2Store as unknown as ISnapshotStore;
+      this.eventStore = new R2EventStore(env.EVENTS_BUCKET);
+      // Snapshot store is not set here - use R2SnapshotStore or D1SnapshotStore separately
     }
 
     // Auto-initialize tenant resolver with default for local development

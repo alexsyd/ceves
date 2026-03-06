@@ -25,7 +25,7 @@ import {
   type IEventHandler,
 } from '../decorators/EventHandler';
 import { EventApplicationError } from '../errors/EventApplicationError';
-import { VersionMismatchError } from '../errors/VersionMismatchError';
+import { VersionConflictError } from '../errors/VersionConflictError';
 import type { DomainEvent } from '../events/DomainEvent';
 import type { EventMetadata } from '../events/EventMetadata';
 
@@ -2662,13 +2662,13 @@ describe('StateRestoration', () => {
     });
 
     describe('Version mismatch detection', () => {
-      it('should throw VersionMismatchError when state.version != lastEvent.version', async () => {
+      it('should throw VersionConflictError when state.version != lastEvent.version', async () => {
         //  UPDATE: Framework auto-sets version after handler returns,
         // so handlers can no longer cause version mismatch by forgetting to set version.
         // This test now verifies that framework correctly sets version even with
         // a handler that doesn't explicitly set it.
         //
-        // To test VersionMismatchError, we need a different scenario - like a
+        // To test VersionConflictError, we need a different scenario - like a
         // corrupted snapshot with wrong version. For now, verify framework prevents bug:
 
         new (createTestCreatedHandler())();
@@ -2722,7 +2722,7 @@ describe('StateRestoration', () => {
         expect(result!.count).toBe(5);
       });
 
-      it('should include diagnostic info in VersionMismatchError', async () => {
+      it('should include diagnostic info in VersionConflictError', async () => {
         //  UPDATE: This test previously checked for version mismatch caused
         // by buggy handler. With framework auto-setting version, we now test that
         // framework provides correct version info and the handler works correctly.
@@ -3225,9 +3225,9 @@ describe('StateRestoration', () => {
             snapshotStore
           ,
           TestState);
-          expect.fail('Should have thrown VersionMismatchError');
+          expect.fail('Should have thrown VersionConflictError');
         } catch (error) {
-          if (error instanceof VersionMismatchError) {
+          if (error instanceof VersionConflictError) {
             const message = error.message;
 
             // Verify message includes all diagnostic info

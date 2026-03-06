@@ -23,31 +23,19 @@ interface EventApplicationErrorJSON extends CevesErrorJSON {
  * ```typescript
  * import { EventApplicationError } from './EventApplicationError';
  *
- * const MoneyWithdrawnEvent = defineEvent(
- *   'MoneyWithdrawn',
- *   z.object({ amount: z.number().positive() }),
- *   (state, event) => {
- *     if (!state) {
- *       throw new EventApplicationError(
- *         'Cannot withdraw from non-existent account',
- *         'MoneyWithdrawn',
- *         event.version,
- *         event.aggregateType,
- *         event.aggregateId
- *       );
- *     }
- *     if (state.balance < event.amount) {
- *       throw new EventApplicationError(
- *         'Insufficient funds',
- *         'MoneyWithdrawn',
- *         event.version,
- *         event.aggregateType,
- *         event.aggregateId
- *       );
- *     }
- *     return { ...state, balance: state.balance - event.amount };
+ * // In an @EventHandler apply() method:
+ * apply(state: AccountState, event: MoneyWithdrawnEvent, metadata: EventMetadata): AccountState {
+ *   if (state.balance < event.amount) {
+ *     throw new EventApplicationError(
+ *       'Insufficient funds',
+ *       'MoneyWithdrawn',
+ *       metadata.version,
+ *       metadata.aggregateType,
+ *       metadata.aggregateId
+ *     );
  *   }
- * );
+ *   return { ...state, balance: state.balance - event.amount };
+ * }
  * ```
  */
 export class EventApplicationError extends CevesError {

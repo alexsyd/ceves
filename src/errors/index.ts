@@ -12,7 +12,6 @@ export { CommandValidationError } from './CommandValidationError';
 export { EventApplicationError } from './EventApplicationError';
 export { AggregateNotFoundError } from './AggregateNotFoundError';
 export { VersionConflictError } from './VersionConflictError';
-export { VersionMismatchError } from './VersionMismatchError';
 export { BusinessRuleViolationError } from './BusinessRuleViolationError';
 export { UnauthorizedError } from './UnauthorizedError';
 export { ForbiddenError } from './ForbiddenError';

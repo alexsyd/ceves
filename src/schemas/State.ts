@@ -18,9 +18,9 @@
 /**
  * Base state class for all aggregates in the event sourcing system.
  *
- * As of , BaseState has been converted from an interface to a class
- * to support the empty state pattern. This eliminates null checks in event handlers
- * by guaranteeing that handlers always receive non-null state.
+ * BaseState is a class (not an interface) to support the empty state pattern.
+ * This eliminates null checks in event handlers by guaranteeing that handlers
+ * always receive non-null state.
  *
  * Every state must include:
  * - `id`: Unique identifier for the aggregate instance (set by event handlers from metadata)
