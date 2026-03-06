@@ -8,7 +8,7 @@
  * - Automatic state restoration from DO storage or R2 migration
  * - Command handler discovery and execution via decorator registry
  * - Query handler discovery and execution via decorator registry
- * - Event persistence to R2/S3 for event sourcing audit log
+ * - Event persistence to R2 for event sourcing audit log
  *
  * @packageDocumentation
  */
@@ -54,10 +54,10 @@ interface RouteMatchResult {
 /**
  * Type-safe wrapper for findRouteByUrl
  * Uses explicit type assertions to handle workspace package type resolution
- * during lint (before workerkit is built)
+ * during lint (before ceves is built)
  */
 function findCommandRouteByUrl(method: string, pathname: string): RouteMatchResult | undefined {
-  // Call the workerkit function - types may not be available at lint time
+  // Call the ceves function - types may not be available at lint time
   const result = (findRouteByUrl as (m: string, p: string) => {
     RouteClass: new () => unknown;
     params: Record<string, string>;
@@ -130,12 +130,12 @@ export abstract class AggregateObject<TState extends BaseState = BaseState> exte
   protected isNewAggregate = false;
 
   /**
-   * Event store for persisting events (R2/S3)
+   * Event store for persisting events (R2)
    */
   protected eventStore!: IEventStore;
 
   /**
-   * Snapshot store for saving/loading state snapshots (R2/S3)
+   * Snapshot store for saving/loading state snapshots (R2)
    * @deprecated Snapshots are no longer used - state is persisted to DO storage.
    * This property is kept for backward compatibility during R2-to-DO migration.
    */
@@ -181,13 +181,13 @@ export abstract class AggregateObject<TState extends BaseState = BaseState> exte
   }
 
   /**
-   * State class constructor for creating empty state instances (ADR-009)
+   * State class constructor for creating empty state instances (state class pattern)
    * Set via constructor parameter to avoid duplication with generic type
    */
   private StateClass: new () => TState;
 
   /**
-   * Get the state class constructor (ADR-009)
+   * Get the state class constructor (state class pattern)
    * Used internally for state restoration and empty state creation
    */
   protected getStateClass(): new () => TState {
@@ -659,7 +659,7 @@ export abstract class AggregateObject<TState extends BaseState = BaseState> exte
     if (this.state?.id && this.aggregateId !== this.state.id) {
       const oldId = this.aggregateId;
       this.aggregateId = this.state.id;
-      storedEvent.aggregateId = this.state.id;  // patch storedEvent before persist — fixes AA-58 Bug 1
+      storedEvent.aggregateId = this.state.id;
       this.logger.info('Updated aggregateId to human-readable ID', {
         aggregateType: this.aggregateType,
         aggregateId: this.aggregateId,
@@ -720,7 +720,7 @@ export abstract class AggregateObject<TState extends BaseState = BaseState> exte
   }
 
   protected applyEvent(event: StoredEvent): void {
-    // Use applyEventToState utility - provides empty state for first event (ADR-009)
+    // Use applyEventToState utility - provides empty state for first event (state class pattern)
     this.state = applyEventToState<TState>(
       this.aggregateType,
       this.state,
@@ -730,7 +730,7 @@ export abstract class AggregateObject<TState extends BaseState = BaseState> exte
   }
 
   /**
-   * Persist event to R2/S3
+   * Persist event to R2
    *
    * @param event - Event to persist
    */

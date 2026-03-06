@@ -1,5 +1,5 @@
 /**
- * Router factory for Workerkit Framework
+ * Router factory for Ceves Framework
  *
  * Creates a Chanfana OpenAPIRouter with auto-discovered routes
  */
@@ -91,7 +91,7 @@ export interface RouterOptions {
  *   openapi: {
  *     title: 'My API',
  *     version: '1.0.0',
- *     description: 'API built with Workerkit',
+ *     description: 'API built with Ceves',
  *   },
  * });
  *

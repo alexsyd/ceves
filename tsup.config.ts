@@ -3,7 +3,6 @@ import { defineConfig } from 'tsup';
 export default defineConfig({
   entry: {
     index: 'src/index.ts',
-    'adapters/aws/index': 'src/adapters/aws/index.ts',
   },
   format: ['esm'],
   dts: true, // Re-enable to check errors

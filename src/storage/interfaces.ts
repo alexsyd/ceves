@@ -9,7 +9,7 @@
  * - Generic type parameters enable type-safe usage with domain events
  * - Separate interfaces for events and snapshots (Single Responsibility Principle)
  * - afterVersion parameter enables incremental event loading for performance
- * - orgId at envelope level for multi-tenancy (Epic 9: ADR-008)
+ * - orgId at envelope level for multi-tenancy
  *
  * @packageDocumentation
  */
@@ -33,7 +33,7 @@ import type { DomainEvent } from '../events/DomainEvent';
  * Architecture:
  * - Domain events (TEvent) contain only business data
  * - StoredEvent envelope adds infrastructure fields (version, timestamp, orgId)
- * - See ADR-008 in architecture.md for full design rationale
+ * - See documentation for full design rationale
  *
  * @example
  * ```typescript
@@ -98,7 +98,7 @@ export interface StoredEvent<TEvent extends DomainEvent = DomainEvent> {
    *
    * Auto-extracted from state/request by the base command handler.
    *
-   * @see Epic 8 (Multitenancy) and ADR-008 in architecture.md
+   * @see Multi-tenancy documentation
    */
   orgId: string;
 
@@ -113,7 +113,7 @@ export interface StoredEvent<TEvent extends DomainEvent = DomainEvent> {
    * - event.event.owner (for AccountOpenedEvent)
    * - event.event.amount (for MoneyDepositedEvent)
    *
-   * @see Story 9.1 and ADR-008 for domain event architecture
+   * @see Domain event architecture documentation
    */
   event: TEvent;
 }

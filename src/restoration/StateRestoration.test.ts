@@ -1,12 +1,12 @@
 /**
  * Tests for State Restoration Engine
  *
- * Covers all acceptance criteria for Story 4.1:
- * - AC-4.1.1: restoreFromEvents function signature
- * - AC-4.1.2: Event handler lookup and validation
- * - AC-4.1.3: Sequential event application
- * - AC-4.1.4: Empty events handling
- * - AC-4.1.5: Null initialState handling
+ * Covers all acceptance criteria for :
+ * - restoreFromEvents function signature
+ * - Event handler lookup and validation
+ * - Sequential event application
+ * - Empty events handling
+ * - Null initialState handling
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -29,13 +29,13 @@ import { VersionMismatchError } from '../errors/VersionMismatchError';
 import type { DomainEvent } from '../events/DomainEvent';
 import type { EventMetadata } from '../events/EventMetadata';
 
-// Test state class (ADR-009)
+// Test state class ()
 class TestState extends BaseState {
   count: number = 0;
   name: string = '';
 }
 
-// Domain events (pure business data - ADR-008)
+// Domain events (pure business data - )
 interface TestCreatedDomainEvent extends DomainEvent {
   type: 'TestCreated';
   name: string;
@@ -51,7 +51,7 @@ interface TestRenamedDomainEvent extends DomainEvent {
   newName: string;
 }
 
-// Zod schemas for StoredEvent envelopes (ADR-008)
+// Zod schemas for StoredEvent envelopes ()
 const TestCreatedEventSchema = z.object({
   aggregateType: z.string(),
   aggregateId: z.string(),
@@ -105,7 +105,7 @@ function createTestCreatedHandler(aggregateType: string = 'test') {
       event: TestCreatedDomainEvent,
       metadata: EventMetadata
     ): TestState {
-      // ADR-009: Handler receives non-null state (empty for first event)
+      // Handler receives non-null state (empty for first event)
       // Handler sets id and orgId (business decisions from metadata/event)
       // Framework auto-sets version and timestamp AFTER this returns
       return {
@@ -134,7 +134,7 @@ function createTestIncrementedHandler(aggregateType: string = 'test') {
       event: TestIncrementedDomainEvent,
       _metadata: EventMetadata
     ): TestState {
-      // ADR-009: Handler receives non-null state
+      // Handler receives non-null state
       // Framework auto-sets version and timestamp AFTER this returns
       return {
         ...state,
@@ -157,7 +157,7 @@ function createTestRenamedHandler(aggregateType: string = 'test') {
       event: TestRenamedDomainEvent,
       _metadata: EventMetadata
     ): TestState {
-      // ADR-009: Handler receives non-null state
+      // Handler receives non-null state
       // Framework auto-sets version and timestamp AFTER this returns
       return {
         ...state,
@@ -201,7 +201,7 @@ describe('StateRestoration', () => {
     clearEventHandlers();
   });
 
-  describe('AC-4.1.1: restoreFromEvents function signature', () => {
+  describe('restoreFromEvents function signature', () => {
     it('should have correct signature with generic TState', () => {
       // Create fresh handler class and instantiate to register it
       new (createTestCreatedHandler())();
@@ -277,7 +277,7 @@ describe('StateRestoration', () => {
     });
   });
 
-  describe('AC-4.1.2: Event handler lookup and validation', () => {
+  describe('Event handler lookup and validation', () => {
     it('should throw EventApplicationError when handler not registered', () => {
       // No handlers registered
       const events: StoredEvent[] = [
@@ -410,7 +410,7 @@ describe('StateRestoration', () => {
     });
   });
 
-  describe('AC-4.1.3: Sequential event application', () => {
+  describe('Sequential event application', () => {
     it('should apply each handler.apply() with previous state', () => {
       new (createTestCreatedHandler())();
       new (createTestIncrementedHandler())();
@@ -572,7 +572,7 @@ describe('StateRestoration', () => {
     });
   });
 
-  describe('AC-4.1.4: Empty events handling', () => {
+  describe('Empty events handling', () => {
     it('should return initialState unchanged when events array is empty', () => {
       const initialState: TestState = {
         id: 'test-1',
@@ -609,7 +609,7 @@ describe('StateRestoration', () => {
     });
   });
 
-  describe('AC-4.1.5: Null initialState handling', () => {
+  describe('Null initialState handling', () => {
     it('should pass null to first handler when initialState is null', () => {
       new (createTestCreatedHandler())();
 
@@ -630,7 +630,7 @@ describe('StateRestoration', () => {
 
       const result = restoreFromEvents<TestState>(events, null, TestState);
 
-      // ADR-009: TestCreatedHandler.apply(emptyState, event) creates initial state
+      // TestCreatedHandler.apply(emptyState, event) creates initial state
       expect(result).toEqual({
         id: 'test-1',
         version: 1,
@@ -769,7 +769,7 @@ describe('StateRestoration', () => {
     });
 
     it('should handle events with complex data structures', () => {
-      // Test with event containing nested data (ADR-008/009)
+      // Test with event containing nested data (/009)
 
       // Domain event interface
       interface ComplexDomainEvent extends DomainEvent {
@@ -852,10 +852,10 @@ describe('StateRestoration', () => {
   });
 
   // ========================================
-  // Story 4.2: Snapshot-Based State Restoration Tests
+  // Snapshot-Based State Restoration Tests
   // ========================================
 
-  describe('restoreState - Story 4.2', () => {
+  describe('restoreState - ', () => {
     // Factory functions for mock stores (fresh instances per test)
     function createMockEventStore(
       events: StoredEvent[]
@@ -869,7 +869,7 @@ describe('StateRestoration', () => {
           _aggregateId: string,
           afterVersion?: number
         ): Promise<StoredEvent[]> {
-          // Filter events by afterVersion (AC-4.2.2)
+          // Filter events by afterVersion ()
           if (afterVersion !== undefined) {
             return Promise.resolve(events.filter((e) => e.version > afterVersion));
           }
@@ -905,7 +905,7 @@ describe('StateRestoration', () => {
       clearEventHandlers();
     });
 
-    describe('AC-4.2.1: Snapshot loading priority', () => {
+    describe('Snapshot loading priority', () => {
       it('should load snapshot first and use its state and version', async () => {
         // Register handlers
         new (createTestCreatedHandler())();
@@ -1022,7 +1022,7 @@ describe('StateRestoration', () => {
       });
     });
 
-    describe('AC-4.2.2: Incremental event loading', () => {
+    describe('Incremental event loading', () => {
       it('should only load events with version > snapshot.version', async () => {
         // Register handlers
         new (createTestCreatedHandler())();
@@ -1123,7 +1123,7 @@ describe('StateRestoration', () => {
       });
     });
 
-    describe('AC-4.2.3: Snapshot + incremental replay', () => {
+    describe('Snapshot + incremental replay', () => {
       it('should combine snapshot state with new events correctly', async () => {
         // Register handlers
         new (createTestIncrementedHandler())();
@@ -1236,7 +1236,7 @@ describe('StateRestoration', () => {
       });
     });
 
-    describe('AC-4.2.4: No snapshot fallback', () => {
+    describe('No snapshot fallback', () => {
       it('should load all events when no snapshot exists', async () => {
         // Register handlers
         new (createTestCreatedHandler())();
@@ -1354,7 +1354,7 @@ describe('StateRestoration', () => {
       });
     });
 
-    describe('AC-4.2.5: No new events optimization', () => {
+    describe('No new events optimization', () => {
       it('should return snapshot state when no events after snapshot', async () => {
         const snapshot: StoredSnapshot = {
           aggregateType: 'test',
@@ -1425,7 +1425,7 @@ describe('StateRestoration', () => {
       });
     });
 
-    describe('AC-4.2.6: Performance target', () => {
+    describe('Performance target', () => {
       it('should complete in <100ms for <100 events since snapshot', async () => {
         new (createTestCreatedHandler())();
         new (createTestIncrementedHandler())();
@@ -1619,13 +1619,13 @@ describe('StateRestoration', () => {
   });
 
   // ==========================================================================
-  // Story 4.2: Snapshot-Based State Restoration Tests
+  // Snapshot-Based State Restoration Tests
   // ==========================================================================
 
-  describe('Story 4.2: Snapshot-Based State Restoration', () => {
+  describe('Snapshot-Based State Restoration', () => {
     // Uses shared createMockEventStore and createMockSnapshotStore from module scope
 
-    describe('AC-4.2.1: Snapshot loading priority', () => {
+    describe('Snapshot loading priority', () => {
       it('should load snapshot first and use its state and version', async () => {
         // Register handlers
         new (createTestCreatedHandler())();
@@ -1745,7 +1745,7 @@ describe('StateRestoration', () => {
       });
     });
 
-    describe('AC-4.2.2: Incremental event loading', () => {
+    describe('Incremental event loading', () => {
       it('should only load events with version > snapshot.version', async () => {
         // Register handlers
         new (createTestIncrementedHandler())();
@@ -1896,7 +1896,7 @@ describe('StateRestoration', () => {
       });
     });
 
-    describe('AC-4.2.3: Snapshot + incremental replay', () => {
+    describe('Snapshot + incremental replay', () => {
       it('should apply incremental events to snapshot state', async () => {
         // Register handlers
         new (createTestIncrementedHandler())();
@@ -2011,7 +2011,7 @@ describe('StateRestoration', () => {
       });
     });
 
-    describe('AC-4.2.4: No snapshot fallback', () => {
+    describe('No snapshot fallback', () => {
       it('should load all events and replay from null when no snapshot exists', async () => {
         // Register handlers
         new (createTestCreatedHandler())();
@@ -2174,7 +2174,7 @@ describe('StateRestoration', () => {
       });
     });
 
-    describe('AC-4.2.5: No new events optimization', () => {
+    describe('No new events optimization', () => {
       it('should return snapshot state without calling restoreFromEvents when no new events', async () => {
         // Snapshot at version 5
         const snapshot: StoredSnapshot = {
@@ -2248,7 +2248,7 @@ describe('StateRestoration', () => {
       });
     });
 
-    describe('AC-4.2.6: Performance target', () => {
+    describe('Performance target', () => {
       it('should complete in <100ms for aggregates with <100 events since snapshot', async () => {
         // Register handlers
         new (createTestCreatedHandler())();
@@ -2308,8 +2308,8 @@ describe('StateRestoration', () => {
         expect(duration).toBeLessThan(100);
       });
 
-      it('should meet Epic 4 performance requirements', async () => {
-        // This test validates the performance claim from Epic 4 tech spec:
+      it('should meet  performance requirements', async () => {
+        // This test validates the performance claim from  tech spec:
         // "Target: <100ms for aggregates with <100 events since snapshot"
 
         new (createTestCreatedHandler())();
@@ -2491,14 +2491,14 @@ describe('StateRestoration', () => {
   });
 
   // ==========================================================================
-  // Story 4.3: State Restoration with Version Tracking Tests
+  // State Restoration with Version Tracking Tests
   // ==========================================================================
 
-  describe('Story 4.3: State Restoration with Version Tracking', () => {
+  describe('State Restoration with Version Tracking', () => {
     // Uses shared createMockEventStore and createMockSnapshotStore from module scope
 
     // Helper to create event handler that sets WRONG version (buggy)
-    // ADR-009: Framework auto-sets version AFTER handler returns, but handler can
+    // Framework auto-sets version AFTER handler returns, but handler can
     // override it incorrectly, causing version mismatch that validateStateVersion catches
     function createBuggyIncrementedHandler(aggregateType: string = 'test') {
       @EventHandler
@@ -2539,7 +2539,7 @@ describe('StateRestoration', () => {
       return BuggyIncrementedHandler;
     }
 
-    describe('AC-4.3.1: Version validation after replay', () => {
+    describe('Version validation after replay', () => {
       it('should validate state.version equals last event version', async () => {
         // Register handlers
         new (createTestCreatedHandler())();
@@ -2661,9 +2661,9 @@ describe('StateRestoration', () => {
       });
     });
 
-    describe('AC-4.3.2: Version mismatch detection', () => {
+    describe('Version mismatch detection', () => {
       it('should throw VersionMismatchError when state.version != lastEvent.version', async () => {
-        // ADR-009 UPDATE: Framework auto-sets version after handler returns,
+        //  UPDATE: Framework auto-sets version after handler returns,
         // so handlers can no longer cause version mismatch by forgetting to set version.
         // This test now verifies that framework correctly sets version even with
         // a handler that doesn't explicitly set it.
@@ -2707,7 +2707,7 @@ describe('StateRestoration', () => {
         const eventStore = createMockEventStore(events);
         const snapshotStore = createMockSnapshotStore(snapshot);
 
-        // ADR-009: Framework prevents version mismatch - this should SUCCEED
+        // Framework prevents version mismatch - this should SUCCEED
         const result = await restoreState<TestState>(
           'test',
           'test-1',
@@ -2723,7 +2723,7 @@ describe('StateRestoration', () => {
       });
 
       it('should include diagnostic info in VersionMismatchError', async () => {
-        // ADR-009 UPDATE: This test previously checked for version mismatch caused
+        //  UPDATE: This test previously checked for version mismatch caused
         // by buggy handler. With framework auto-setting version, we now test that
         // framework provides correct version info and the handler works correctly.
 
@@ -2763,7 +2763,7 @@ describe('StateRestoration', () => {
         const eventStore = createMockEventStore(events);
         const snapshotStore = createMockSnapshotStore(snapshot);
 
-        // ADR-009: Framework ensures version is correct, so this succeeds
+        // Framework ensures version is correct, so this succeeds
         const result = await restoreState<TestState>(
           'test',
           'test-1',
@@ -2781,7 +2781,7 @@ describe('StateRestoration', () => {
       });
 
       it('should detect version mismatch with multiple events', async () => {
-        // ADR-009 UPDATE: Framework auto-sets version, so buggy handler doesn't
+        //  UPDATE: Framework auto-sets version, so buggy handler doesn't
         // cause mismatch. Test now verifies framework correctly handles multiple events.
 
         new (createTestCreatedHandler())();
@@ -2831,7 +2831,7 @@ describe('StateRestoration', () => {
         const eventStore = createMockEventStore(events);
         const snapshotStore = createMockSnapshotStore(snapshot);
 
-        // ADR-009: Framework ensures version is correct across all events
+        // Framework ensures version is correct across all events
         const result = await restoreState<TestState>(
           'test',
           'test-1',
@@ -2847,7 +2847,7 @@ describe('StateRestoration', () => {
       });
     });
 
-    describe('AC-4.3.3: Incremental loading pattern', () => {
+    describe('Incremental loading pattern', () => {
       it('should support using state.version as afterVersion filter', async () => {
         // Register handlers
         new (createTestCreatedHandler())();
@@ -3047,7 +3047,7 @@ describe('StateRestoration', () => {
       });
     });
 
-    describe('AC-4.3.4: Generic constraint enforcement', () => {
+    describe('Generic constraint enforcement', () => {
       it('should enforce TState extends BaseState at compile time', async () => {
         // This is a compile-time test verified by TypeScript
         // If TState doesn't have version field, TypeScript will error

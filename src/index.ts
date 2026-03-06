@@ -1,9 +1,9 @@
 /**
  * Ceves - Event Sourcing for Cloudflare Workers
  *
- * A decorator-based event sourcing framework built on Durable Objects.
- * Provides CQRS/ES patterns with automatic state restoration, OpenAPI
- * routing, and multi-cloud storage adapters.
+ * A decorator-based event sourcing framework built on Cloudflare Workers
+ * and Durable Objects. Provides CQRS/ES patterns with automatic state
+ * restoration and OpenAPI routing.
  *
  * @packageDocumentation
  */

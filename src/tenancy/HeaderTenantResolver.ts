@@ -2,15 +2,14 @@
  * Header-based Tenant Resolver Implementation
  *
  * This module provides a simple header-based tenant resolver that reads the organization ID
- * directly from an HTTP header. This is the AWS-native pattern where API Gateway Lambda
- * Authorizers set the orgId header after validating JWT/API keys.
+ * directly from an HTTP header. Useful when an upstream gateway or middleware
+ * sets the orgId header after validating credentials.
  *
  * Key Design Decisions:
  * - Reads orgId from HTTP header (no database lookup in hot path)
  * - Configurable header name (default: X-Org-Id)
  * - Optional header support with default fallback for local development
- * - Works with API Gateway Lambda Authorizers, Cognito, or custom auth
- * - Platform-agnostic (works on both AWS and Cloudflare)
+ * - Works with any gateway, middleware, or custom auth layer
  *
  * @packageDocumentation
  */
@@ -21,8 +20,8 @@ import { MissingApiKeyError } from './errors';
 /**
  * Header-based implementation of the ITenantResolver interface.
  *
- * Resolves tenant from an HTTP header (typically set by an API Gateway Lambda Authorizer).
- * This decouples authentication from application logic - the authorizer validates credentials
+ * Resolves tenant from an HTTP header (typically set by an upstream gateway or middleware).
+ * This decouples authentication from application logic - the auth layer validates credentials
  * and sets the orgId header, and this resolver simply reads it.
  *
  * @example
@@ -39,14 +38,11 @@ import { MissingApiKeyError } from './errors';
  *
  * @example
  * ```typescript
- * // AWS Lambda with API Gateway Authorizer
- * // Authorizer validates JWT and sets X-Org-Id header:
- * // context.authorizer.principalId = orgId
- * //
- * // Lambda receives request with X-Org-Id header:
+ * // With upstream auth gateway
+ * // Gateway validates credentials and sets X-Org-Id header
  * const resolver = new HeaderTenantResolver('X-Org-Id');
  * const app = new CevesApp({
- *   eventStore: new S3EventStore(s3, bucketName),
+ *   eventStore: new R2EventStore(env.EVENTS_BUCKET),
  *   tenantResolver: resolver
  * });
  * ```
@@ -128,7 +124,7 @@ export class HeaderTenantResolver implements ITenantResolver {
       // No header and no default = authentication failure
       throw new MissingApiKeyError(
         `Missing required header: ${this.headerName}. ` +
-          `Ensure your API Gateway Authorizer or authentication layer sets this header.`
+          `Ensure your authentication layer sets this header.`
       );
     }
 

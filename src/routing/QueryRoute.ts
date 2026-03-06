@@ -2,7 +2,7 @@
  * QueryRoute - Base class for Ceves query routes
  *
  * Extends Chanfana's OpenAPIRoute to provide automatic DO forwarding for queries.
- * Works with @Route decorator from Workerkit for auto-registration.
+ * Works with @Route decorator from Ceves for auto-registration.
  *
  * Convention-based routing:
  * - URL pattern: /{aggregateType}/:id/{queryName}

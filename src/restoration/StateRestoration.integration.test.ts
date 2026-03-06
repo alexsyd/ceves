@@ -7,7 +7,7 @@
  * 2. Snapshot + incremental replay with real R2SnapshotStore
  * 3. Snapshot + incremental replay with real D1SnapshotStore
  * 4. Version validation in end-to-end flows
- * 5. Cross-epic integration (Epic 1 Storage, Epic 2 Schemas, Epic 3 Decorators)
+ * 5. Cross-epic integration ( Storage,  Schemas,  Decorators)
  *
  * Test Environment:
  * - Runs in actual Workers runtime (workerd) via @cloudflare/vitest-pool-workers
@@ -23,20 +23,20 @@ import { env } from 'cloudflare:test';
 import type { R2Bucket, D1Database } from '@cloudflare/workers-types';
 import { z } from 'zod';
 
-// Epic 4 - State Restoration
+// State Restoration
 import { restoreState } from './StateRestoration';
 
-// Epic 1 - Storage implementations
+// Storage implementations
 import { R2EventStore } from '../storage/R2EventStore';
 import { R2SnapshotStore } from '../storage/R2SnapshotStore';
 import { D1SnapshotStore } from '../storage/D1SnapshotStore';
 import type { StoredEvent, StoredSnapshot } from '../storage/interfaces';
 
-// Epic 2 - Schemas
+// Schemas
 import { BaseState } from '../schemas/State';
 import type { DomainEvent, EventMetadata } from '../schemas/Event';
 
-// Epic 3 - Decorators
+// Decorators
 import {
   EventHandler,
   clearEventHandlers,
@@ -47,7 +47,7 @@ import {
 import { EventApplicationError } from '../errors/EventApplicationError';
 
 /**
- * Test state class (ADR-009: must be a class, not type alias)
+ * Test state class (must be a class, not type alias)
  */
 class TestState extends BaseState {
   count: number = 0;
@@ -73,7 +73,7 @@ interface TestRenamedEvent extends DomainEvent {
 }
 
 /**
- * Zod schemas for test events (Epic 2 integration)
+ * Zod schemas for test events ( integration)
  * Validate StoredEvent structure (infrastructure envelope + domain event)
  */
 const TestCreatedEventSchema = z.object({
@@ -116,7 +116,7 @@ const TestRenamedEventSchema = z.object({
 });
 
 /**
- * Event handler factories (Epic 3 integration)
+ * Event handler factories ( integration)
  * Create fresh handler classes for each test to ensure isolation
  * Each factory requires aggregateType to register scoped handlers
  */
@@ -132,7 +132,7 @@ function createTestCreatedHandler(aggregateType: string) {
       event: TestCreatedEvent,
       metadata: EventMetadata
     ): TestState {
-      // ADR-009: Handler receives non-null state (empty for first event)
+      // Handler receives non-null state (empty for first event)
       // Handler sets id and orgId (business decisions)
       // Framework auto-sets version and timestamp AFTER this returns
       return {
@@ -161,7 +161,7 @@ function createTestIncrementedHandler(aggregateType: string) {
       event: TestIncrementedEvent,
       _metadata: EventMetadata
     ): TestState {
-      // ADR-009: Handler receives non-null state
+      // Handler receives non-null state
       // Framework auto-sets version and timestamp AFTER this returns
       return {
         ...state,
@@ -184,7 +184,7 @@ function createTestRenamedHandler(aggregateType: string) {
       event: TestRenamedEvent,
       _metadata: EventMetadata
     ): TestState {
-      // ADR-009: Handler receives non-null state
+      // Handler receives non-null state
       // Framework auto-sets version and timestamp AFTER this returns
       return {
         ...state,
@@ -197,7 +197,7 @@ function createTestRenamedHandler(aggregateType: string) {
 
 /**
  * Buggy handler factory for testing malformed state
- * Note: With ADR-009, version and timestamp are auto-set by framework.
+ * Note: With , version and timestamp are auto-set by framework.
  * This handler doesn't set orgId, demonstrating that handlers must set it.
  */
 function createBuggyIncrementedHandler(aggregateType: string) {
@@ -214,7 +214,7 @@ function createBuggyIncrementedHandler(aggregateType: string) {
       event: TestIncrementedEvent,
       _metadata: EventMetadata
     ): TestState {
-      // ADR-009: Handler receives non-null state
+      // Handler receives non-null state
       // Framework auto-sets version and timestamp
       // Handler should preserve orgId from previous state
       // Note: This was originally "buggy" but framework now handles correctly
@@ -272,7 +272,7 @@ describe('StateRestoration integration (Workers runtime)', () => {
     d1SnapshotStore = new D1SnapshotStore(env.TEST_SNAPSHOTS_DB as D1Database);
   });
 
-  describe('AC-4.4.4: Full event replay with R2EventStore (no snapshot)', () => {
+  describe('Full event replay with R2EventStore (no snapshot)', () => {
     it('should restore state from 50 events using real R2EventStore', async () => {
       // Arrange: Define aggregate type and register handlers
       const aggregateType = 'counter';
@@ -404,7 +404,7 @@ describe('StateRestoration integration (Workers runtime)', () => {
     });
   });
 
-  describe('AC-4.4.4: Snapshot + incremental with R2SnapshotStore', () => {
+  describe('Snapshot + incremental with R2SnapshotStore', () => {
     it('should restore from R2 snapshot + incremental events', async () => {
       // Arrange: Register handlers
       const aggregateType = 'counter';
@@ -570,7 +570,7 @@ describe('StateRestoration integration (Workers runtime)', () => {
     });
   });
 
-  describe('AC-4.4.4: Snapshot + incremental with D1SnapshotStore', () => {
+  describe('Snapshot + incremental with D1SnapshotStore', () => {
     it('should restore from D1 snapshot + incremental events', async () => {
       // Arrange
       const aggregateType = 'counter';
@@ -679,9 +679,9 @@ describe('StateRestoration integration (Workers runtime)', () => {
     });
   });
 
-  describe('AC-4.4.4: Version auto-management in end-to-end flow (ADR-008)', () => {
+  describe('Version auto-management in end-to-end flow ()', () => {
     it('should auto-set version from envelope regardless of handler implementation', async () => {
-      // Arrange: Register handlers (buggy handler is now fixed per ADR-008)
+      // Arrange: Register handlers (buggy handler is now fixed per )
       const aggregateType = 'counter';
       const aggregateId = 'counter-008';
       new (createTestCreatedHandler(aggregateType))();
@@ -800,7 +800,7 @@ describe('StateRestoration integration (Workers runtime)', () => {
     });
   });
 
-  describe('AC-4.4.4: Error handling with real storage', () => {
+  describe('Error handling with real storage', () => {
     it('should throw EventApplicationError when handler not registered', async () => {
       // Arrange: No handlers registered
       const aggregateType = 'counter';
@@ -845,17 +845,17 @@ describe('StateRestoration integration (Workers runtime)', () => {
     });
   });
 
-  describe('AC-4.4.4: Cross-epic integration validation', () => {
-    it('should integrate Epic 1 (Storage), Epic 2 (Schemas), Epic 3 (Decorators)', async () => {
+  describe('Cross-epic integration validation', () => {
+    it('should integrate  (Storage),  (Schemas),  (Decorators)', async () => {
       // Arrange: This test validates all cross-epic integration points
       const aggregateType = 'integrated';
       const aggregateId = 'int-001';
-      // Epic 3: Register event handlers via decorators
+      // Register event handlers via decorators
       new (createTestCreatedHandler(aggregateType))();
       new (createTestIncrementedHandler(aggregateType))();
       new (createTestRenamedHandler(aggregateType))();
 
-      // Epic 1: Use R2EventStore and R2SnapshotStore
+      // Use R2EventStore and R2SnapshotStore
       const events: StoredEvent[] = [
         createTestEvent(aggregateType, aggregateId, 1, 'TestCreated', {
           name: 'Integration Test',
@@ -872,7 +872,7 @@ describe('StateRestoration integration (Workers runtime)', () => {
         await eventStore.save(event);
       }
 
-      // Act: Epic 4 - Restore state
+      // Act: Restore state
       const result = await restoreState<TestState>(
         aggregateType,
         aggregateId,
@@ -881,7 +881,7 @@ describe('StateRestoration integration (Workers runtime)', () => {
         TestState
       );
 
-      // Assert: Epic 2 - Verify BaseState schema compliance
+      // Assert: Verify BaseState schema compliance
       expect(result).not.toBeNull();
       expect(result).toHaveProperty('id');
       expect(result).toHaveProperty('version');
@@ -903,7 +903,7 @@ describe('StateRestoration integration (Workers runtime)', () => {
       new (createTestCreatedHandler(aggregateType))();
       new (createTestIncrementedHandler(aggregateType))();
 
-      // Epic 1: Save snapshot to R2
+      // Save snapshot to R2
       const snapshot: StoredSnapshot = {
         aggregateType,
         aggregateId,
@@ -920,7 +920,7 @@ describe('StateRestoration integration (Workers runtime)', () => {
       };
       await r2SnapshotStore.save(snapshot);
 
-      // Epic 1: Save events to R2
+      // Save events to R2
       for (let i = 6; i <= 10; i++) {
         await eventStore.save(
           createTestEvent(aggregateType, aggregateId, i, 'TestIncremented', {
@@ -929,7 +929,7 @@ describe('StateRestoration integration (Workers runtime)', () => {
         );
       }
 
-      // Act: Epic 4 - Restore state (Epic 3 - handlers, Epic 2 - schemas)
+      // Act: Restore state (handlers, schemas)
       const result = await restoreState<TestState>(
         aggregateType,
         aggregateId,

@@ -24,12 +24,12 @@ import { applyEventToState } from '../decorators/EventHandler';
 import { VersionMismatchError } from '../errors/VersionMismatchError';
 
 /**
- * Restore state from event array using registered event handlers (ADR-009).
+ * Restore state from event array using registered event handlers.
  *
  * This is a pure function that applies events sequentially to rebuild aggregate state.
  * Events MUST be pre-sorted by version (ascending order) before calling this function.
  *
- * **Process (ADR-009 Updated):**
+ * **Process ( Updated):**
  * 1. Start with initialState (or null for new aggregates)
  * 2. For each event:
  *    - Apply event via `applyEventToState()` helper
@@ -52,7 +52,7 @@ import { VersionMismatchError } from '../errors/VersionMismatchError';
  *
  * @param events - Events to apply (ordered by version, ascending)
  * @param initialState - Starting state (null for new aggregate, or snapshot state for incremental)
- * @param StateClass - State class constructor for creating empty state (ADR-009)
+ * @param StateClass - State class constructor for creating empty state
  * @returns Final state after applying all events, or initialState if events array is empty
  *
  * @throws {EventApplicationError} If event handler is not registered for an event type
@@ -291,7 +291,7 @@ export async function restoreState<TState extends BaseState>(
     return initialState;
   }
 
-  // 5. Apply incremental events to snapshot state - AC-4.2.3 (ADR-009: pass StateClass)
+  // 5. Apply incremental events to snapshot state - AC-4.2.3 (pass StateClass)
   const finalState = restoreFromEvents<TState>(events, initialState, StateClass);
 
   // 6. Validate version consistency after restoration - AC-4.3.1, AC-4.3.2

@@ -39,13 +39,13 @@ export interface EventHandlerMetadata {
 }
 
 /**
- * Event handler interface - all event handlers must implement this (ADR-009)
+ * Event handler interface - all event handlers must implement this
  *
  * Event handlers are pure functions that transform aggregate state based on domain events.
  * They receive pure business data (domain event) and infrastructure metadata separately,
  * maintaining clean separation of concerns.
  *
- * **ADR-009 Empty State Pattern:**
+ * ** Empty State Pattern:**
  * - Event handlers ALWAYS receive non-null state (empty state for first event)
  * - Event handlers SET id and orgId (business decisions from metadata/event)
  * - Framework AUTO-SETS timestamp and version AFTER handler returns
@@ -93,7 +93,7 @@ export interface IEventHandler<
    * Event handlers transform aggregate state based on domain events. The handler
    * receives pure business data (event) and infrastructure metadata separately.
    *
-   * **ADR-009 Changes:**
+   * ** Changes:**
    * - State is NEVER null (empty state provided for first event)
    * - Handler MUST set id and orgId (business fields)
    * - Handler returns FULL state (including orgId)
@@ -322,10 +322,10 @@ export function findEventHandler(
  * Convenience function that finds and applies the appropriate event handler.
  * Extracts domain event from StoredEvent envelope and passes metadata separately.
  *
- * **Architecture (ADR-008 + ADR-009):**
+ * **Architecture ( + ):**
  * - Domain events are extracted from the StoredEvent envelope
  * - Handlers receive pure business data (domain event) and infrastructure metadata separately
- * - Handlers ALWAYS receive non-null state (empty state for first event - ADR-009)
+ * - Handlers ALWAYS receive non-null state (empty state for first event - )
  * - Handlers SET id and orgId (business decisions)
  * - Framework AUTO-SETS timestamp and version AFTER handler returns (infrastructure fields)
  * - Framework READS orgId from state when creating StoredEvent
@@ -359,10 +359,10 @@ export function applyEventToState<TState extends BaseState>(
     );
   }
 
-  // Provide empty state for first event (ADR-009)
+  // Provide empty state for first event
   const inputState = state ?? new StateClass();
 
-  // Extract domain event from StoredEvent envelope (ADR-008)
+  // Extract domain event from StoredEvent envelope
   const domainEvent = event.event;
 
   // Create metadata from StoredEvent envelope fields

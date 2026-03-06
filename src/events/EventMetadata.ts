@@ -97,7 +97,7 @@ export interface EventMetadata {
    * Extracted from StoredEvent envelope.
    *
    * @example "org-456", "tenant-abc"
-   * @see Epic 8 (Multitenancy) and ADR-008 in architecture.md
+   * @see Multi-tenancy documentation
    */
   orgId: string;
 }

@@ -5,24 +5,14 @@ This guide will help you build your first event-sourced application with Ceves i
 ## Prerequisites
 
 - Node.js 20+
-- pnpm (recommended) or npm
+- npm or pnpm
 - Basic TypeScript knowledge
-- Cloudflare account (for deployment) OR AWS account
+- Cloudflare account (for deployment)
 
 ## Installation
 
 ```bash
-# Using pnpm (recommended)
-pnpm add ceves
-
-# Using npm
 npm install ceves
-```
-
-For AWS Lambda support, also install:
-
-```bash
-pnpm add @aws-sdk/client-s3 @types/aws-lambda
 ```
 
 ## Your First Aggregate: BankAccount
@@ -137,37 +127,7 @@ export class MoneyWithdrawnEvent extends BaseEvent {
 }
 ```
 
-### 4. Create Command Handlers
-
-```typescript
-// src/handlers.ts
-import { CommandHandler } from 'ceves';
-import { OpenAccountCommand, DepositCommand, WithdrawCommand } from './commands';
-import { AccountOpenedEvent, MoneyDepositedEvent, MoneyWithdrawnEvent } from './events';
-
-@CommandHandler
-export class OpenAccountHandler {
-  handle(command: OpenAccountCommand) {
-    return [new AccountOpenedEvent(command)];
-  }
-}
-
-@CommandHandler
-export class DepositHandler {
-  handle(command: DepositCommand) {
-    return [new MoneyDepositedEvent(command)];
-  }
-}
-
-@CommandHandler
-export class WithdrawHandler {
-  handle(command: WithdrawCommand) {
-    return [new MoneyWithdrawnEvent(command)];
-  }
-}
-```
-
-### 5. Set Up for Cloudflare Workers
+### 4. Set Up for Cloudflare Workers
 
 ```typescript
 // src/index.ts
@@ -216,7 +176,7 @@ app.post('/account/:id/deposit', async (c) => {
 export default app;
 ```
 
-### 6. Configure Wrangler
+### 5. Configure Wrangler
 
 ```toml
 # wrangler.toml
@@ -234,7 +194,7 @@ database_name = "bank-snapshots"
 database_id = "your-database-id"
 ```
 
-### 7. Deploy
+### 6. Deploy
 
 ```bash
 # Create D1 database
@@ -247,22 +207,22 @@ wrangler r2 bucket create bank-events
 wrangler deploy
 ```
 
-### 8. Test It!
+### 7. Test It!
 
 ```bash
 # Open account
-curl -X POST https://your-worker.workers.dev/account/acc-123/open \\
-  -H "Content-Type: application/json" \\
+curl -X POST https://your-worker.workers.dev/account/acc-123/open \
+  -H "Content-Type: application/json" \
   -d '{"amount": 1000}'
 
 # Deposit
-curl -X POST https://your-worker.workers.dev/account/acc-123/deposit \\
-  -H "Content-Type: application/json" \\
+curl -X POST https://your-worker.workers.dev/account/acc-123/deposit \
+  -H "Content-Type: application/json" \
   -d '{"amount": 500}'
 
 # Withdraw
-curl -X POST https://your-worker.workers.dev/account/acc-123/withdraw \\
-  -H "Content-Type: application/json" \\
+curl -X POST https://your-worker.workers.dev/account/acc-123/withdraw \
+  -H "Content-Type: application/json" \
   -d '{"amount": 200}'
 ```
 
@@ -270,7 +230,7 @@ curl -X POST https://your-worker.workers.dev/account/acc-123/withdraw \\
 
 ```bash
 # Run tests
-pnpm test
+npm test
 
 # Watch mode
 wrangler dev
@@ -279,10 +239,9 @@ wrangler dev
 ## Next Steps
 
 - **Testing**: Check `/example/src` for comprehensive test examples
-- **AWS Lambda**: See `/example-lambda` for AWS deployment
 - **Durable Objects**: See `/example` for zero-latency state persistence with DO Storage API
 - **Advanced**: Explore multi-tenancy, custom storage backends
-- **API Reference**: Run `pnpm docs` to generate full API documentation
+- **API Reference**: Run `npm run docs` to generate full API documentation
 
 ## Core Concepts
 
@@ -304,13 +263,8 @@ Ceves automatically restores state before your handlers execute:
 2. If empty, replay all events from R2
 3. Pass current state to your handler
 
-**For CevesApp (stateless) or AWS Lambda:**
-1. Load latest snapshot (if available)
-2. Replay events since snapshot
-3. Pass current state to your handler
-
 ## Need Help?
 
-- **Examples**: `/example` and `/example-lambda` folders
-- **Issues**: [GitHub Issues](https://github.com/smartphonekey/ceves/issues)
-- **Documentation**: Run `pnpm docs` for full API reference
+- **Examples**: `/example` folder
+- **Issues**: [GitHub Issues](https://github.com/alexsyd/ceves/issues)
+- **Documentation**: Run `npm run docs` for full API reference
