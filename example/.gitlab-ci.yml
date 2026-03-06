@@ -1,0 +1,70 @@
+# GitLab CI/CD Configuration for Ceves Example
+#
+# This pipeline runs Newman API tests against the example Worker
+
+stages:
+  - test
+  - api-test
+
+# Run unit tests
+unit-tests:
+  stage: test
+  image: node:20
+  cache:
+    paths:
+      - node_modules/
+  script:
+    - npm install
+    - npm test
+  artifacts:
+    reports:
+      junit: test-results.xml
+    when: always
+
+# Run Newman API tests
+newman-tests:
+  stage: api-test
+  image: node:20
+  cache:
+    paths:
+      - node_modules/
+  services:
+    - name: cloudflare/wrangler:latest
+      alias: wrangler
+  before_script:
+    - npm install
+  script:
+    # Start Wrangler dev server in background
+    - npm run dev &
+    - WRANGLER_PID=$!
+
+    # Wait for server to be ready
+    - echo "Waiting for Wrangler dev server..."
+    - sleep 10
+
+    # Run Newman tests
+    - npm run newman:test
+
+    # Stop Wrangler
+    - kill $WRANGLER_PID || true
+  artifacts:
+    paths:
+      - newman-results/
+    reports:
+      junit: newman-results/newman-junit-report.xml
+    when: always
+  allow_failure: false
+
+# Optional: Deploy to staging
+deploy-staging:
+  stage: deploy
+  image: node:20
+  only:
+    - main
+  script:
+    - npm install -g wrangler
+    - wrangler deploy
+  environment:
+    name: staging
+    url: https://ceves-example.workers.dev
+  when: manual

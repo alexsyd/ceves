@@ -1,0 +1,35 @@
+name = "ceves-example"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+# R2 bucket for event storage (required)
+# Create with: wrangler r2 bucket create ceves-example-events
+[[r2_buckets]]
+binding = "EVENTS_BUCKET"
+bucket_name = "ceves-example-events"
+preview_bucket_name = "ceves-example-events-preview"
+
+# D1 database for snapshot storage (optional)
+# Create with: wrangler d1 create ceves-example-snapshots
+# Uncomment and add your database_id after creation
+# [[d1_databases]]
+# binding = "SNAPSHOTS_DB"
+# database_name = "ceves-example-snapshots"
+# database_id = "your-database-id-here"
+
+# D1 database for tenant/API key data (required for multitenancy)
+# Create with: wrangler d1 create ceves-tenants
+# Apply migrations: wrangler d1 migrations apply ceves-tenants --local
+[[d1_databases]]
+binding = "TENANT_DB"
+database_name = "ceves-tenants"
+database_id = "local-dev-db-id"  # Placeholder for local development
+
+# Environment variables
+[vars]
+LOG_LEVEL = "info"
+DEFAULT_ORG_ID = "default-org"  # For development without API keys
+
+# Development overrides
+[env.dev]
+vars = { LOG_LEVEL = "debug" }

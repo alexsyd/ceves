@@ -1,0 +1,1 @@
+{"aggregateType":"BankAccountAggregate","aggregateId":"299ff7897a13f88cc9a613b3bd0a7be8d032f645190647b3a3d303d7a3f639bc","version":1,"type":"AccountOpened","timestamp":"2025-12-03T13:45:25.901Z","orgId":"default-org","event":{"type":"AccountOpened","owner":"LegacyFormat","initialDeposit":2000}}

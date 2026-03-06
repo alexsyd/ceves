@@ -1,0 +1,249 @@
+{
+  "info": {
+    "name": "Ceves BankAccount - E2E Tests",
+    "description": "End-to-end Newman tests for BankAccount event sourcing API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Happy Path - Complete Lifecycle",
+      "item": [
+        {
+          "name": "1. Open Account (Initial: $100)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate a unique accountId for this test run",
+                  "if (!pm.environment.get('accountId')) {",
+                  "  pm.environment.set('accountId', 'acc-' + Date.now());",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has success flag', function () {",
+                  "  const jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.success).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test('Account version is 1', function () {",
+                  "  const jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.version).to.eql(1);",
+                  "  pm.environment.set('currentVersion', jsonData.version);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"aggregateType\": \"account\",\n  \"aggregateId\": \"{{accountId}}\",\n  \"owner\": \"Alice\",\n  \"initialDeposit\": 100\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}/open",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "{{accountId}}", "open"]
+            }
+          }
+        },
+        {
+          "name": "2. Deposit $50 (Balance: $150)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Version incremented to 2', function () {",
+                  "  const jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.version).to.eql(2);",
+                  "  pm.environment.set('currentVersion', jsonData.version);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"aggregateType\": \"account\",\n  \"aggregateId\": \"{{accountId}}\",\n  \"amount\": 50\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}/deposit",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "{{accountId}}", "deposit"]
+            }
+          }
+        },
+        {
+          "name": "3. Withdraw $25 (Balance: $125)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Version incremented to 3', function () {",
+                  "  const jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.version).to.eql(3);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"aggregateType\": \"account\",\n  \"aggregateId\": \"{{accountId}}\",\n  \"amount\": 25\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}/withdraw",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "{{accountId}}", "withdraw"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error Cases",
+      "item": [
+        {
+          "name": "4. Open Duplicate Account (Expect 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error message mentions already exists', function () {",
+                  "  const jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.message).to.include('already exists');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"aggregateType\": \"account\",\n  \"aggregateId\": \"{{accountId}}\",\n  \"owner\": \"Bob\",\n  \"initialDeposit\": 200\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}/open",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "{{accountId}}", "open"]
+            }
+          }
+        },
+        {
+          "name": "5. Withdraw Insufficient Funds (Expect 400)",
+          "event": [
+            {
+              "listen": "pre-request",
+              "script": {
+                "exec": [
+                  "// Generate new account ID for this test",
+                  "pm.environment.set('insufficientFundsAccountId', 'acc-' + Date.now());"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error message mentions insufficient funds', function () {",
+                  "  const jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.message.toLowerCase()).to.include('insufficient');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"aggregateType\": \"account\",\n  \"aggregateId\": \"{{accountId}}\",\n  \"amount\": 99999\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}/withdraw",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "{{accountId}}", "withdraw"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8787"
+    }
+  ]
+}

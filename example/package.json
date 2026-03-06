@@ -1,0 +1,37 @@
+{
+  "name": "ceves-example",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Example Cloudflare Worker demonstrating Ceves event sourcing library",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "schema:extract": "curl http://localhost:8787/openapi.json > openapi.json",
+    "postman:generate": "node scripts/generate-postman-collection.js",
+    "postman:upload": "node -r dotenv/config scripts/upload-to-postman.js",
+    "postman:all": "npm run schema:extract && npm run postman:generate",
+    "newman:test": "node scripts/run-newman-tests.js",
+    "newman:ci": "npm run dev & sleep 5 && npm run newman:test; kill %1",
+    "test:all": "npm test && npm run newman:ci"
+  },
+  "dependencies": {
+    "ceves": "file:../",
+    "chanfana": "^2.8.3",
+    "hono": "^4.10.6",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241127.0",
+    "@types/node": "^22.10.1",
+    "dotenv": "^17.2.3",
+    "newman": "^6.2.1",
+    "newman-reporter-htmlextra": "^1.23.1",
+    "openapi-to-postmanv2": "^5.4.0",
+    "typescript": "^5.0.0",
+    "vitest": "^2.1.8",
+    "wrangler": "^3.95.0"
+  }
+}
