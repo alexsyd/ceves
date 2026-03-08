@@ -64,6 +64,14 @@ export interface RouterOptions {
   enableDocs?: boolean;
   /** Middleware to apply before routes are registered */
   middleware?: Array<(c: Context, next: () => Promise<void>) => Promise<void | Response>>;
+  /**
+   * Glob patterns for auto-discovery of route and event handler files.
+   * This is a build-time hint used by the `ceves-discover` CLI to generate
+   * side-effect imports. It is a no-op at runtime.
+   *
+   * @example ['./routes/**\/*.ts', './events/**\/*.ts']
+   */
+  discover?: string[];
 }
 
 /**

@@ -1,6 +1,6 @@
 {
   "name": "@sydorenkoalex/ceves",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Event Sourcing framework for Cloudflare Workers and Durable Objects with CQRS and OpenAPI routing",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,8 +11,12 @@
       "import": "./dist/index.js"
     }
   },
+  "bin": {
+    "ceves-discover": "bin/ceves-discover.js"
+  },
   "files": [
     "dist",
+    "bin",
     "README.md",
     "LICENSE"
   ],
