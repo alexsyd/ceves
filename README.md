@@ -164,6 +164,7 @@ export class GetBalanceQuery implements IQueryHandler<BankAccountState, {}, Bala
 
 ## Documentation
 
+- **Living documentation**: [docs/living-documentation.md](./docs/living-documentation.md) — generated source inventory; refresh with `npm run docs:living` and validate with `npm run docs:living:check`.
 - **Getting Started**: [GETTING_STARTED.md](./GETTING_STARTED.md)
 - **Example**: [example/README.md](./example/README.md)
 
